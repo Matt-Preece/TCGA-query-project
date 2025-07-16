@@ -1,7 +1,16 @@
+#set directory you will be working from
+##NOTE: when writing directory paths in R use "/" not "\"
 setwd("G:/Desktop/Corr. Download")
 
-libraries <- c("TCGAbiolinks","SummarizedExperiment","dplyr","ggplot2","ggpubr","cowplot","rstatix","DESeq2","BiocParallel")
+#state which genes are to be investigated under goi
+##NOTE: Only use NCBI gene names
+goi <- c("ATAT1","HDAC6","SIRT2")
+goi <- toupper(goi)
 
+#this code is written specifically for breast cancer data do not change
+cancer <- "BRCA"
+
+libraries <- c("TCGAbiolinks","SummarizedExperiment","dplyr","ggplot2","ggpubr","cowplot","rstatix","DESeq2","BiocParallel")
 for (lib in libraries) {
   if (require(package = lib, character.only = TRUE)) {
     successful <- "Successful"
@@ -14,17 +23,15 @@ for (lib in libraries) {
   }
 }
 
-cancer <- "BRCA"
-goi <- c("ATAT1","HDAC6","SIRT2")
-goi <- toupper(goi)
-
 if (any(list.files() %in% paste(cancer,"_subtype.rds", sep = ""))) {
 
 print(paste(cancer,"SUBTYPE DESEQ COMPLETE", sep = " "))
-data <- readRDS(paste(cancer, "_subtype.rds", sep = ""))
+data <- readRDS(paste(cancer, "_path_stage.rds", sep = ""))
 prep <- readRDS(paste(cancer, ".rds", sep = ""))
 clinical_data <- colData(prep)
 clinical_data <- as.data.frame(clinical_data)
+clinical_data <- clinical_data[!is.na(clinical_data$paper_BRCA_Subtype_PAM50),]
+clinical_data$paper_BRCA_Subtype_PAM50 <- factor(data$paper_BRCA_Subtype_PAM50, levels = c("Normal","Basal","Her2","LumA","LumB"))
 rm(prep)
 gc()
 
@@ -34,6 +41,8 @@ gc()
 
 	print(paste(cancer, "DATA AVAILABLE - RUNNING DESEQ", sep = " "))
 	prep <- readRDS(paste(cancer, ".rds", sep = ""))
+	prep <- prep[,!is.na(prep$paper_BRCA_Subtype_PAM50)]
+	
 	gc()
 
 	data <- prep[,!is.na(prep$paper_BRCA_Subtype_PAM50)]
