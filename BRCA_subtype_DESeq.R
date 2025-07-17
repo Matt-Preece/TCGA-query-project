@@ -111,8 +111,8 @@ gc()
 #narrow down results to only those from genes of interest
 #results for each individual gene are combined into a single table of all the pairwise comparisons and p.signif symbols are added according to padj
 #anaylsis done on full transcriptome to maintian statistical power and reliability of results
-for(i in 1:length(goi)) {
-  keep <- which(rowRanges(data)$gene_name %in% goi[i])
+for(gene in goi) {
+  keep <- which(rowRanges(data)$gene_name %in% gene)
   tmp <- sapply(res,"[",keep,,simplify = F)
   tmp <- do.call(rbind,tmp)
   rownames(tmp) <- names
@@ -122,60 +122,62 @@ for(i in 1:length(goi)) {
                                 ifelse(tmp$padj > 0.001, "**",
                                        ifelse(tmp$padj > 0.0001, "***","****"
                                        ))))
-  assign(paste("subtype",goi[i],sep = "_"), value = tmp)
+  assign(paste("subtype",gene,sep = "_"), value = tmp)
   
 }
 
 #extract normalised gene counts from data set for plotting
 vsd <- vst(data, blind = F)
-gene.count <- assay(vsd)
+gene_count <- assay(vsd)
 keep <- which(rowRanges(data)$gene_name %in% goi)
 gene_id <- rowRanges(data)$gene_id[keep]
-keep <- which(rownames(gene.count) %in% gene_id)
-gene.count <- gene.count[keep,,drop = T]
-gene.count <- as.data.frame(t(gene.count))
+keep <- which(rownames(gene_count) %in% gene_id)
+gene_count <- gene_count[keep,,drop = T]
+gene_count <- as.data.frame(t(gene_count))
 
 #replace column names from ENSG code to NCBI name
-for(i in 1:length(goi)) {
-  keep <- which(rowRanges(data)$gene_name %in% goi[i])
-  tmp <- which(colnames(gene.count) %in% rowRanges(data)$gene_id[keep])
-  colnames(gene.count)[tmp] <- goi[i]
+for(gene in goi) {
+  keep <- which(rowRanges(data)$gene_name %in% gene)
+  tmp <- which(colnames(gene_count) %in% rowRanges(data)$gene_id[keep])
+  colnames(gene_count)[tmp] <- gene
 }
 
 #no log2 required as the counts have already been normalised
-#combine BRCA.subj and gene.count to create data frame for plotting
-gene.count$barcode <- rownames(gene.count)
-gene.data <- left_join(clinical_data, gene.count, by = "barcode")
-gene.data <- gene.data[!is.na(gene.data$paper_BRCA_Subtype_PAM50),]
-gene.data$paper_BRCA_Subtype_PAM50 <- factor(gene.data$paper_BRCA_Subtype_PAM50, levels = c("Normal","Basal","Her2","LumA","LumB"))
+#combine BRCA.subj and gene_count to create data frame for plotting
+gene_count$barcode <- rownames(gene_count)
+gene_data <- left_join(clinical_data, gene_count, by = "barcode")
+gene_data <- gene_data[!is.na(gene_data$paper_BRCA_Subtype_PAM50),]
+gene_data$paper_BRCA_Subtype_PAM50 <- factor(gene_data$paper_BRCA_Subtype_PAM50, levels = c("Normal","Basal","Her2","LumA","LumB"))
                                              
-for(i in 1:length(goi)) {
-  tmp <- gene.data[c("paper_BRCA_Subtype_PAM50",goi[i])]
-  tmp$gene <- goi[i]
+for(gene in goi) {
+  tmp <- gene_data[c("paper_BRCA_Subtype_PAM50",gene)]
+  tmp$gene <- gene
   colnames(tmp)[2] <- "counts"
   
   keep <- !is.na(tmp$paper_BRCA_Subtype_PAM50)
-  pathstage_vs_tpm <- tmp[keep,]
-  pathstage_vs_tpm$paper_BRCA_Subtype_PAM50 <- factor(pathstage_vs_tpm$paper_BRCA_Subtype_PAM50)
+  subtype_vs_counts <- tmp[keep,]
+  subtype_vs_counts$paper_BRCA_Subtype_PAM50 <- factor(subtype_vs_counts$paper_BRCA_Subtype_PAM50)
   
   #use compare_means to produce data in such a way for stat_pvalue_manual to plot p.signif
-  stat.test <- compare_means(counts ~ paper_BRCA_Subtype_PAM50, data = pathstage_vs_tpm, group.by = "gene", method = "wilcox")
-  stat.test <- as.data.frame(stat.test[1:4,])
-  res <- get(paste("subtype",goi[i],sep = "_"))
-  stat.test$p.signif <- res$p.signif
-  non.sig <- which(stat.test$p.signif %in% "ns")
+  stat_test <- compare_means(counts ~ paper_BRCA_Subtype_PAM50, data = subtype_vs_counts, group.by = "gene", method = "wilcox")
+  stat_test <- as.data.frame(stat_test[1:4,])
+  res <- get(paste("subtype",gene,sep = "_"))
+  stat_test$p.signif <- res$p.signif
+  non.sig <- which(stat_test$p.signif %in% "ns")
   
   #plot chart, problems arise with hide.ns = T and all ns so using if{} else{} as work around
   if(length(non.sig) == 4) {
-    p1 <- ggplot(pathstage_vs_tpm) +
+    p1 <- ggplot(subtype_vs_counts) +
       geom_boxplot(aes(x = paper_BRCA_Subtype_PAM50, y = counts, fill = paper_BRCA_Subtype_PAM50))
   } else {
-    p1 <- ggplot(pathstage_vs_tpm) +
+    sig <- which(stat_test$p.signif != "ns")
+    stat_test[sig,5:7] <- 0.0001
+      p1 <- ggplot(subtype_vs_counts) +
       geom_boxplot(aes(x = paper_BRCA_Subtype_PAM50, y = counts, fill = paper_BRCA_Subtype_PAM50)) +
-      stat_pvalue_manual(stat.test, label = "p.signif", hide.ns = T,
-                         y.position = max(pathstage_vs_tpm$counts) + 0.5, step.increase = 0.15) 
+      stat_pvalue_manual(stat_test, label = "p.signif", hide.ns = T,
+                         y.position = max(subtype_vs_counts$counts) + 0.5, step.increase = 0.15) 
   }
-  assign(goi[i], value = p1)
+  assign(gene, value = p1)
   
 }
 
@@ -185,7 +187,7 @@ p2 <- plot_grid(plotlist = tmp, ncol = 1, nrow = length(goi))
 
 name <- as.character()
 for(i in 1:length(goi)) {
-  name <- paste(name, goi[i], sep = "_")
+  name <- paste(name, gene, sep = "_")
 }
 
 ggsave(file = paste(cancer,"_subtype",name,".png", sep = ""), p2)
