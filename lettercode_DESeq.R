@@ -135,13 +135,16 @@ stat_test <- as.data.frame(stat_test)
 stat_test$p.signif <- res$p.signif
 
 #plot graph and save
-p1 <- ggplot(NT_TP_vs_counts) +
-  geom_boxplot(aes(x = gene, y = counts, fill = shortLetterCode)) +
-  stat_pvalue_manual(stat_test, x = "gene", label = "p.signif", y.position = max(NT_TP_vs_counts$counts) + 0.5)
+for (gene in goi) {
+tmp <- get(gene)
+keep <- which(stat_test$gene %in% gene)
+tmp_stat <- stat_test[keep,]
 
-name <- as.character()
-for(gene in goi) {
-  name <- paste(name, gene, sep = "_")
+p1 <- ggplot(tmp) +
+  geom_boxplot(aes(x = gene, y = counts, fill = shortLetterCode)) +
+  stat_pvalue_manual(tmp_stat, x = "gene", label = "p.signif", y.position = max(tmp$counts) + 0.5)
+
+ggsave(file = paste(cancer,"_N_v_T_",gene,".png", sep = ""), p1)
 }
 
 ggsave(file = paste(cancer,"_N_v_T_",name,".png", sep = ""), p1)
@@ -158,9 +161,9 @@ count_csv <- data.frame()
 for(i in 1:length(goi)) {
   
   tmp <- get(goi[i])
-  keep <- which(tmp$vital_status %in% "NT")
+  keep <- which(tmp$shortLetterCode %in% "NT")
   tmp_nt <- tmp[keep,]
-  keep <- which(tmp$vital_status %in% "TP")
+  keep <- which(tmp$shortLetterCode %in% "TP")
   tmp_tp <- tmp[keep,]
   count_csv <- cbind.fill(count_csv,tmp_nt[,2],tmp_tp[,2])
   count_csv <- as.data.frame(count_csv)
@@ -170,4 +173,5 @@ for(i in 1:length(goi)) {
 
 count_csv[is.na(count_csv)] <- ""
 write.csv(count_csv, file = paste(cancer,"_N_v_T_",name,"_vst_counts.csv", sep = ""), row.names = F)
+
 
