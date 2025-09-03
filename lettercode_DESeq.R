@@ -155,18 +155,19 @@ cbind.fill <- function(...){
 }
 
 count_csv <- data.frame()
-for(gene in goi) {
+for(i in 1:length(goi)) {
   
-  tmp <- get(gene)
+  tmp <- get(goi[i])
   keep <- which(tmp$vital_status %in% "NT")
   tmp_nt <- tmp[keep,]
   keep <- which(tmp$vital_status %in% "TP")
   tmp_tp <- tmp[keep,]
   count_csv <- cbind.fill(count_csv,tmp_nt[,2],tmp_tp[,2])
   count_csv <- as.data.frame(count_csv)
-  colnames(count_csv)[c(i*2-1,i*2)] <- c(paste(gene,"vst_counts","NT",sep = "_"),paste(gene,"vst_counts","TP",sep = "_"))
+  colnames(count_csv)[c(i*2-1,i*2)] <- c(paste(goi[i],"vst_counts","NT",sep = "_"),paste(goi[i],"vst_counts","TP",sep = "_"))
   
 }
 
 count_csv[is.na(count_csv)] <- ""
 write.csv(count_csv, file = paste(cancer,"_N_v_T_",name,"_vst_counts.csv", sep = ""), row.names = F)
+
