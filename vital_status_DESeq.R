@@ -136,9 +136,9 @@ tmp <- get(gene)
 keep <- which(stat_test$gene %in% gene)
 tmp_stat <- stat_test[keep,]
 	
-p1 <- ggplot(gene) +
+p1 <- ggplot(tmp) +
   geom_boxplot(aes(x = gene, y = counts, fill = vital_status)) +
-  stat_pvalue_manual(tmp_stat, x = "gene", label = "p.signif", y.position = max(gene$counts) + 0.5)
+  stat_pvalue_manual(tmp_stat, x = "gene", label = "p.signif", y.position = max(tmp$counts) + 0.5)
 	
 ggsave(file = paste(cancer,"_vital_stat_",name,".png", sep = ""), p1)
 }
@@ -172,4 +172,5 @@ for(gene in goi) {
 }
 count_csv[is.na(count_csv)] <- ""
 write.csv(count_csv, file = paste(cancer,"_vital_stat_",name,"_vst_counts.csv", sep = ""), row.names = F)
+
 
