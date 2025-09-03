@@ -171,7 +171,13 @@ for(i in 1:length(goi)) {
   
 }
 
+name <- as.character()
+for(gene in goi) {
+  name <- paste(name, gene, sep = "_")
+}
+						  
 count_csv[is.na(count_csv)] <- ""
 write.csv(count_csv, file = paste(cancer,"_N_v_T_",name,"_vst_counts.csv", sep = ""), row.names = F)
+
 
 
