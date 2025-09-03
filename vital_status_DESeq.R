@@ -27,7 +27,7 @@ prep <- readRDS(paste(cancer, ".rds", sep = ""))
 clinical_data <- colData(prep)
 clinical_data <- as.data.frame(clinical_data)
 clinical_data <- clinical_data[!is.na(clinical_data$vital_status),]
-clinical_data$vital_status <- factor(clinical_data$vita;_status, levels = c("Alive","Dead"))
+clinical_data$vital_status <- factor(clinical_data$vital_status, levels = c("Alive","Dead"))
 rm(prep)
 gc()
 
@@ -83,7 +83,6 @@ gc()
 	gc()
 
 }
-
 }
 
 keep <- which(rowRanges(data)$gene_name %in% goi)
@@ -132,16 +131,17 @@ stat_test <- compare_means(counts ~ vital_status, data = vital_vs_counts, group.
 stat_test <- as.data.frame(stat_test)
 stat_test$p.signif <- res$p.signif
 
-p1 <- ggplot(vital_vs_counts) +
-  geom_boxplot(aes(x = gene, y = counts, fill = vital_status)) +
-  stat_pvalue_manual(stat_test, x = "gene", label = "p.signif", y.position = max(vital_vs_counts$counts) + 0.5)
-
-name <- as.character()
 for(gene in goi) {
-  name <- paste(name, gene, sep = "_")
-}
-
+tmp <- get(gene)
+keep <- which(stat_test$gene %in% gene)
+tmp_stat <- stat_test[keep,]
+	
+p1 <- ggplot(gene) +
+  geom_boxplot(aes(x = gene, y = counts, fill = vital_status)) +
+  stat_pvalue_manual(tmp_stat, x = "gene", label = "p.signif", y.position = max(gene$counts) + 0.5)
+	
 ggsave(file = paste(cancer,"_vital_stat_",name,".png", sep = ""), p1)
+}
 
 cbind.fill <- function(...){
     nm <- list(...) 
@@ -166,5 +166,10 @@ for(gene in goi) {
   
 }
 
+name <- as.character()
+for(gene in goi) {
+  name <- paste(name, gene, sep = "_")
+}
 count_csv[is.na(count_csv)] <- ""
 write.csv(count_csv, file = paste(cancer,"_vital_stat_",name,"_vst_counts.csv", sep = ""), row.names = F)
+
