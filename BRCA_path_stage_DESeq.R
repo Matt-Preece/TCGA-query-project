@@ -190,17 +190,14 @@ for(gene in goi) {
                        y.position = max(pathstage_vs_count$counts) + 0.5, step.increase = 0.15) 
 	}
 	
-  assign(gene, value = p1)
+  ggsave(file = paste(cancer,"_path_stage",gene,".png", sep = ""), p2)
 
 }
-
-#plot graph and save
-tmp <- mget(goi[1:length(goi)])
-p2 <- plot_grid(plotlist = tmp, ncol = 1, nrow = length(goi))
 
 name <- as.character()
 for(gene in goi) {
   name <- paste(name, gene, sep = "_")
 }
 
-ggsave(file = paste(cancer,"_path_stage",name,".png", sep = ""), p2)
+
+
