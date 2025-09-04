@@ -177,18 +177,13 @@ for(gene in goi) {
       stat_pvalue_manual(stat_test, label = "p.signif", hide.ns = T,
                          y.position = max(subtype_vs_counts$counts) + 0.5, step.increase = 0.15) 
   }
-  assign(gene, value = p1)
+  ggsave(file = paste(cancer,"_subtype",gene,".png", sep = ""), p1)
   
 }
-
-#plot graph and save
-tmp <- mget(goi[1:length(goi)])
-p2 <- plot_grid(plotlist = tmp, ncol = 1, nrow = length(goi))
 
 name <- as.character()
 for(i in 1:length(goi)) {
   name <- paste(name, gene, sep = "_")
 }
 
-ggsave(file = paste(cancer,"_subtype",name,".png", sep = ""), p2)
 
