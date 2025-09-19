@@ -23,6 +23,14 @@ for (lib in libraries) {
   }
 }
 
+cbind.fill <- function(...){
+    nm <- list(...) 
+    nm <- lapply(nm, as.matrix)
+    n <- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
 if (any(list.files() %in% paste(cancer,"_path_stage.rds", sep = ""))) {
 
 print(paste(cancer,"PATHOLOGICAL STAGE DESEQ COMPLETE", sep = " "))
@@ -189,18 +197,20 @@ for(gene in goi) {
     		stat_pvalue_manual(stat_test, label = "p.signif", hide.ns = T,
                        y.position = max(pathstage_vs_count$counts) + 0.5, step.increase = 0.15) 
 	}
-	
-  assign(gene, value = p1)
 
+  ggsave(file = paste(cancer,"_path_stage_",gene,".png", sep = ""), p1)
+  pathstage_df <- data.frame()
+  keep <- which(pathstage_vs_count$ajcc_pathologic_stage %in% "Stage_0")
+  pathstage_df <- cbind.fill(pathstage_df,pathstage_vs_count[keep,"counts"])
+  keep <- which(pathstage_vs_count$ajcc_pathologic_stage %in% "Stage_I")
+  pathstage_df <- cbind.fill(pathstage_df,pathstage_vs_count[keep,"counts"])
+  keep <- which(pathstage_vs_count$ajcc_pathologic_stage %in% "Stage_II")
+  pathstage_df <- cbind.fill(pathstage_df,pathstage_vs_count[keep,"counts"])
+  keep <- which(pathstage_vs_count$ajcc_pathologic_stage %in% "Stage_III")
+  pathstage_df <- cbind.fill(pathstage_df,pathstage_vs_count[keep,"counts"])
+  keep <- which(pathstage_vs_count$ajcc_pathologic_stage %in% "Stage_IV")
+  pathstage_df <- cbind.fill(pathstage_df,pathstage_vs_count[keep,"counts"])
+  colnames(pathstage_df) <- c("Stage_0","Stage_I","Stage_II","Stage_III","Stage_IV")
+  pathstage_df[is.na(pathstage_df)] <- ""
+  write.csv(pathstage_df, file = paste0("../results/",cancer,"_path_stage_",gene,".csv"))
 }
-
-#plot graph and save
-tmp <- mget(goi[1:length(goi)])
-p2 <- plot_grid(plotlist = tmp, ncol = 1, nrow = length(goi))
-
-name <- as.character()
-for(gene in goi) {
-  name <- paste(name, gene, sep = "_")
-}
-
-ggsave(file = paste(cancer,"_path_stage",name,".png", sep = ""), p2)

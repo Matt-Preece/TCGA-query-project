@@ -123,11 +123,11 @@ for(i in 1:length(goi)) {
 surv.obj <- Surv(km_plot$time, km_plot$status)
 
 #create two groups based on the expression data, in this case LOW =< median, HIGH > median other methods are possible
-for(i in 1:length(goi)) {
-  km_plot[,paste(goi[i],"strat",sep = "_")] <- ntile(km_plot[goi[i]],2)
-  km_plot[,paste(goi[i],"strat",sep = "_")] <- ifelse(km_plot[,paste(goi[i],"strat",sep = "_")] == 1,"LOW","HIGH")
+for(gene in goi) {
+  km_plot[,paste(gene,"strat",sep = "_")] <- ntile(km_plot[gene],2)
+  km_plot[,paste(gene,"strat",sep = "_")] <- ifelse(km_plot[,paste(gene,"strat",sep = "_")] == 1,"LOW","HIGH")
   
-  km_plot$tmp <- km_plot[,paste(goi[i],"strat",sep = "_")]
+  km_plot$tmp <- km_plot[,paste(gene,"strat",sep = "_")]
   
   s1 <- survfit(surv.obj ~ tmp, data = km_plot)
   p1 <- ggsurvplot(s1,
@@ -135,21 +135,6 @@ for(i in 1:length(goi)) {
                    pval = T,
                    risk.table = T,
                    conf.int = T)
-  assign(goi[i], value = p1)
+ggsave(file = paste0("../results/",cancer,"_kaplan_meier_",gene,".png"), p1)
+
 }
-
-
-#stitch all plots together and save $path is necessary as ggsurvplots can't be saved. $plot extracts just the plot and not the additional data
-tmp <- mget(goi)
-for(i in 1:length(goi)){
-  tmp[[i]] <- tmp[[i]]$plot  
-}
-
-p2 <- plot_grid(plotlist = tmp, ncol = 1, nrow = length(goi))
-
-name <- as.character()
-for(i in 1:length(goi)) {
-  name <- paste(name, goi[i], sep = "_")
-}
-
-ggsave(file = paste(cancer,"_kaplan_meier",name,".png", sep = ""), p2)
