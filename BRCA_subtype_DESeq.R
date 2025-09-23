@@ -35,7 +35,7 @@ cbind.fill <- function(...){
 if (any(list.files() %in% paste(cancer,"_subtype.rds", sep = ""))) {
 
 print(paste(cancer,"SUBTYPE DESEQ COMPLETE", sep = " "))
-data <- readRDS(paste(cancer, "_path_stage.rds", sep = ""))
+data <- readRDS(paste(cancer, "_subtype.rds", sep = ""))
 prep <- readRDS(paste(cancer, ".rds", sep = ""))
 clinical_data <- colData(prep)
 clinical_data <- as.data.frame(clinical_data)
@@ -204,6 +204,7 @@ for(gene in goi) {
   write.csv(subtype_df, file = paste0("../results/",cancer,"_path_stage_",gene,".csv"))
 	
 }
+
 
 
 
