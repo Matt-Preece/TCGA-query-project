@@ -40,7 +40,7 @@ prep <- readRDS(paste(cancer, ".rds", sep = ""))
 clinical_data <- colData(prep)
 clinical_data <- as.data.frame(clinical_data)
 clinical_data <- clinical_data[!is.na(clinical_data$paper_BRCA_Subtype_PAM50),]
-clinical_data$paper_BRCA_Subtype_PAM50 <- factor(data$paper_BRCA_Subtype_PAM50, levels = c("Normal","Basal","Her2","LumA","LumB"))
+clinical_data$paper_BRCA_Subtype_PAM50 <- factor(clinical_data$paper_BRCA_Subtype_PAM50, levels = c("Normal","Basal","Her2","LumA","LumB"))
 rm(prep)
 gc()
 
@@ -204,6 +204,7 @@ for(gene in goi) {
   write.csv(subtype_df, file = paste0("../results/",cancer,"_path_stage_",gene,".csv"))
 	
 }
+
 
 
 
