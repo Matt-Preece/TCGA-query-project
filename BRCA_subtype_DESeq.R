@@ -189,21 +189,22 @@ for(gene in goi) {
   }
   ggsave(file = paste(cancer,"_subtype",gene,".png", sep = ""), p1)
   subtype_df <- data.frame()
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "Normal")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "Basal")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "Her2")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "LumA")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "LumB")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "Normal")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "Basal")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "Her2")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])cd 
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "LumA")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "LumB")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])
   colnames(subtype_df) <- c("Normal","Basal","Her2","LumA","LumB")
   subtype_df[is.na(subtype_df)] <- ""
   write.csv(subtype_df, file = paste0("../results/",cancer,"_path_stage_",gene,".csv"))
 	
 }
+
 
 
 
