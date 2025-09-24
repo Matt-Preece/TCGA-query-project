@@ -3,6 +3,12 @@ setwd("G:/Desktop/Corr. Download")
 libraries <-c("survival","TCGAbiolinks","SummarizedExperiment","dplyr","ggplot2",
               "ggpubr","ggfortify","rstatix","DESeq2","survminer","cowplot")
 
+tmp <- read.delim("cancer.txt", header = F)
+cancer <- tmp[,1]
+
+tmp <- read.delim("genes.txt", header = F)
+goi <- tmp[,1]
+goi <- toupper(goi)
 
 for (lib in libraries) {
   if (require(package = lib, character.only = TRUE)) {
@@ -16,10 +22,7 @@ for (lib in libraries) {
   }
 }
 
-#set genes to be investigated
-cancer <- "BRCA"
-goi <- c("ATAT1","HDAC6","SIRT2")
-goi <- toupper(goi)
+
 
 if (any(list.files() %in% paste(cancer,"_surv_anal.rds", sep = ""))) {
 
@@ -130,11 +133,13 @@ for(gene in goi) {
   km_plot$tmp <- km_plot[,paste(gene,"strat",sep = "_")]
   
   s1 <- survfit(surv.obj ~ tmp, data = km_plot)
-  p1 <- ggsurvplot(s1,
+  try(p1 <- ggsurvplot(s1,
                    data = km_plot,
                    pval = T,
                    risk.table = T,
-                   conf.int = T)
+                   conf.int = T))
+	
 ggsave(file = paste0("../results/",cancer,"_kaplan_meier_",gene,".png"), p1)
 
 }
+
