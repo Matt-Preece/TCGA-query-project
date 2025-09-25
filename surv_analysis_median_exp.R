@@ -22,7 +22,9 @@ for (lib in libraries) {
   }
 }
 
-
+grid.draw.ggsurvplot <- function(x){
+  survminer:::print.ggsurvplot(x, newpage = FALSE)
+}
 
 if (any(list.files() %in% paste(cancer,"_surv_anal.rds", sep = ""))) {
 
@@ -133,13 +135,19 @@ for(gene in goi) {
   km_plot$tmp <- km_plot[,paste(gene,"strat",sep = "_")]
   
   s1 <- survfit(surv.obj ~ tmp, data = km_plot)
-  try(p1 <- ggsurvplot(s1,
+
+suppressWarnings(
+  p1 <- ggsurvplot(s1,
                    data = km_plot,
                    pval = T,
-                   risk.table = T,
-                   conf.int = T))
-	
-ggsave(file = paste0("../results/",cancer,"_kaplan_meier_",gene,".png"), p1)
+                   conf.int = T,
+				   palette = c("red","blue"),
+				   surv.median.line = "hv",
+				   axes.offset = F,
+				   legend.labs = c(paste(gene,"High"), paste(gene, "Low")))
+	)
 
+ggsave(file = paste0("../results/",cancer,"_kaplan_meier_",gene,".png"), p1, height = 6, width = 12)
 }
+
 
