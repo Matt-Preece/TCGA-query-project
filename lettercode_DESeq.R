@@ -132,6 +132,7 @@ NT_TP_vs_counts <- NT_TP_vs_counts[keep,]
 #create stat_test data.frame to be used to add p values to final plot, add p values calculated from DESeq
 stat_test <- compare_means(counts ~ shortLetterCode, data = NT_TP_vs_counts, group.by = "gene", method = "wilcox")
 stat_test <- as.data.frame(stat_test)
+stat_test <- stat_test[order(stat_test$gene),]
 stat_test$p.signif <- res$p.signif
 
 #plot graph and save
@@ -165,7 +166,6 @@ for(i in 1:length(goi)) {
   tmp_nt <- tmp[keep,]
   keep <- which(tmp$shortLetterCode %in% "TP")
   tmp_tp <- tmp[keep,]
-  count_csv <- cbind.fill(count_csv,tmp_nt[,2],tmp_tp[,2])
   count_csv <- as.data.frame(count_csv)
   colnames(count_csv)[c(i*2-1,i*2)] <- c(paste(goi[i],"vst_counts","NT",sep = "_"),paste(goi[i],"vst_counts","TP",sep = "_"))
   
@@ -178,6 +178,7 @@ for(gene in goi) {
 						  
 count_csv[is.na(count_csv)] <- ""
 write.csv(count_csv, file = paste(cancer,"_N_v_T_",name,"_vst_counts.csv", sep = ""), row.names = F)
+
 
 
 
