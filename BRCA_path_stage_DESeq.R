@@ -5,7 +5,7 @@ setwd("G:/Desktop/Corr. Download")
 #state which genes are to be investigated under goi
 ##NOTE: Only use NCBI gene names
 tmp <- read.delim("genes.txt", header = F)
-goi <- [,1]
+goi <- tmp[,1]
 goi <- toupper(goi)
 
 #this code is written specifically for breast cancer data do not change
@@ -216,4 +216,5 @@ for(gene in goi) {
   pathstage_df[is.na(pathstage_df)] <- ""
   write.csv(pathstage_df, file = paste0("../results/",cancer,"_path_stage_",gene,".csv"))
 }
+
 
