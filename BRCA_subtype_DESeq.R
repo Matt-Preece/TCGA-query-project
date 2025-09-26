@@ -176,7 +176,7 @@ for(gene in goi) {
   outlier <- is.na(stat_test$p.signif)
   
   #plot chart, problems arise with hide.ns = T and all ns so using if{} else{} as work around
-  if(length(non.sig) == 4 | length(outlier) == 4) {
+  if(length(non.sig) == 4 | sum(outlier) == 4) {
     p1 <- ggplot(subtype_vs_counts) +
       geom_boxplot(aes(x = paper_BRCA_Subtype_PAM50, y = counts, fill = paper_BRCA_Subtype_PAM50))
   } else {
@@ -204,6 +204,7 @@ for(gene in goi) {
   write.csv(subtype_df, file = paste0("../results/",cancer,"_subtype",gene,".csv"))
 	
 }
+
 
 
 
