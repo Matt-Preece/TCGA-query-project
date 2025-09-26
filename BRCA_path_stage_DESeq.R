@@ -185,7 +185,7 @@ for(gene in goi) {
 #plot chart, problems arise with hide.ns = T and all ns so using if{} else{} as work around, also stat_pvalue_manual() uses values from all p, p.adj and p.format columns, as the p.signif is determined using
 # DESeq() rather than compare_means() there can be discrepancies hence the short sig <- lines to ensure there is no conflict
 
-	if(length(non_sig) == 10 | length(outlier) == 10) {
+	if(length(non_sig) == 10 | sum(outlier) == 10) {
 	
 	p1 <- ggplot(pathstage_vs_count) +
   	geom_boxplot(aes(x = ajcc_pathologic_stage, y = counts, fill = ajcc_pathologic_stage))
@@ -216,5 +216,6 @@ for(gene in goi) {
   pathstage_df[is.na(pathstage_df)] <- ""
   write.csv(pathstage_df, file = paste0("../results/",cancer,"_path_stage_",gene,".csv"))
 }
+
 
 
