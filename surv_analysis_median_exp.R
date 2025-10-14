@@ -22,6 +22,7 @@ for (lib in libraries) {
   }
 }
 
+#this function is necessary to get ggsave to save the survplot later
 grid.draw.ggsurvplot <- function(x){
   survminer:::print.ggsurvplot(x, newpage = FALSE)
 }
@@ -144,10 +145,15 @@ suppressWarnings(
 				   palette = c("red","blue"),
 				   surv.median.line = "hv",
 				   axes.offset = F,
-				   legend.labs = c(paste(gene,"High"), paste(gene, "Low")))
+				   legend.labs = c(paste(gene,"High"), paste(gene, "Low")),
+				   xlim = c(0,max(km_plot$time)*1.05),
+				   title = paste(cancer,gene,"Survival Plot")[1]
+					)
 	)
 
-ggsave(file = paste0("../results/",cancer,"_kaplan_meier_",gene,".png"), p1, height = 6, width = 12)
+
+ggsave(file = paste0("../results/",cancer,"_km_",drug,"_",gene,".png")[1], p1, height = 6, width = 12)
 }
+
 
 
