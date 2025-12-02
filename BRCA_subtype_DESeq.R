@@ -4,7 +4,8 @@ setwd("G:/Desktop/Corr. Download")
 
 #state which genes are to be investigated under goi
 ##NOTE: Only use NCBI gene names
-goi <- c("ATAT1","HDAC6","SIRT2")
+tmp <- read.delim("genes.txt", header = F)
+goi <- tmp[,1]
 goi <- toupper(goi)
 
 #this code is written specifically for breast cancer data do not change
@@ -34,12 +35,12 @@ cbind.fill <- function(...){
 if (any(list.files() %in% paste(cancer,"_subtype.rds", sep = ""))) {
 
 print(paste(cancer,"SUBTYPE DESEQ COMPLETE", sep = " "))
-data <- readRDS(paste(cancer, "_path_stage.rds", sep = ""))
+data <- readRDS(paste(cancer, "_subtype.rds", sep = ""))
 prep <- readRDS(paste(cancer, ".rds", sep = ""))
 clinical_data <- colData(prep)
 clinical_data <- as.data.frame(clinical_data)
 clinical_data <- clinical_data[!is.na(clinical_data$paper_BRCA_Subtype_PAM50),]
-clinical_data$paper_BRCA_Subtype_PAM50 <- factor(data$paper_BRCA_Subtype_PAM50, levels = c("Normal","Basal","Her2","LumA","LumB"))
+clinical_data$paper_BRCA_Subtype_PAM50 <- factor(clinical_data$paper_BRCA_Subtype_PAM50, levels = c("Normal","Basal","Her2","LumA","LumB"))
 rm(prep)
 gc()
 
@@ -172,9 +173,10 @@ for(gene in goi) {
   res <- get(paste("subtype",gene,sep = "_"))
   stat_test$p.signif <- res$p.signif
   non.sig <- which(stat_test$p.signif %in% "ns")
+  outlier <- is.na(stat_test$p.signif)
   
   #plot chart, problems arise with hide.ns = T and all ns so using if{} else{} as work around
-  if(length(non.sig) == 4) {
+  if(length(non.sig) == 4 | sum(outlier) == 4) {
     p1 <- ggplot(subtype_vs_counts) +
       geom_boxplot(aes(x = paper_BRCA_Subtype_PAM50, y = counts, fill = paper_BRCA_Subtype_PAM50))
   } else {
@@ -185,23 +187,29 @@ for(gene in goi) {
       stat_pvalue_manual(stat_test, label = "p.signif", hide.ns = T,
                          y.position = max(subtype_vs_counts$counts) + 0.5, step.increase = 0.15) 
   }
-  ggsave(file = paste(cancer,"_subtype",gene,".png", sep = ""), p1)
+  ggsave(file = paste("../results/",cancer,"_subtype",gene,".png", sep = ""), p1)
   subtype_df <- data.frame()
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "Normal")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "Basal")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "Her2")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "LumA")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
-  keep <- which(subtype_vs_count$paper_BRCA_Subtype_PAM50 %in% "LumB")
-  subtype_df <- cbind.fill(subtype_df,subtype_vs_count[keep,"counts"])
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "Normal")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "Basal")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "Her2")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])cd 
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "LumA")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])
+  keep <- which(subtype_vs_counts$paper_BRCA_Subtype_PAM50 %in% "LumB")
+  subtype_df <- cbind.fill(subtype_df,subtype_vs_counts[keep,"counts"])
   colnames(subtype_df) <- c("Normal","Basal","Her2","LumA","LumB")
   subtype_df[is.na(subtype_df)] <- ""
-  write.csv(subtype_df, file = paste0("../results/",cancer,"_path_stage_",gene,".csv"))
+  write.csv(subtype_df, file = paste0("../results/",cancer,"_subtype",gene,".csv"))
 	
 }
+
+
+
+
+
+
 
 
 

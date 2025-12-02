@@ -129,6 +129,7 @@ vital_vs_counts <- vital_vs_counts[keep,]
 
 stat_test <- compare_means(counts ~ vital_status, data = vital_vs_counts, group.by = "gene", method = "wilcox")
 stat_test <- as.data.frame(stat_test)
+stat_test <- stat_test[order(stat_test$gene),]
 stat_test$p.signif <- res$p.signif
 
 for(gene in goi) {
@@ -172,5 +173,6 @@ for(gene in goi) {
 }
 count_csv[is.na(count_csv)] <- ""
 write.csv(count_csv, file = paste(cancer,"_vital_stat_",name,"_vst_counts.csv", sep = ""), row.names = F)
+
 
 
