@@ -129,31 +129,45 @@ for(i in 1:length(goi)) {
 surv.obj <- Surv(km_plot$time, km_plot$status)
 
 #create two groups based on the expression data, in this case LOW =< median, HIGH > median other methods are possible
+#you can change the size of the groups by alterting the value of n e.g n=10 compares the top and bottom deciles
+
+n=2
+
 for(gene in goi) {
-  km_plot[,paste(gene,"strat",sep = "_")] <- ntile(km_plot[gene],2)
-  km_plot[,paste(gene,"strat",sep = "_")] <- ifelse(km_plot[,paste(gene,"strat",sep = "_")] == 1,"LOW","HIGH")
+  km_plot[,paste(gene,"strat",sep = "_")] <- ntile(km_plot[gene],n)
+  tmp <- km_plot[,paste(gene,"strat",sep = "_")]
+  keep <- which(tmp %in% 1 | tmp %in% n)
+  tmp_plot <- km_plot[keep,]
+  tmp_plot[,paste(gene,"strat",sep = "_")] <- ifelse(tmp_plot[,paste(gene,"strat",sep = "_")] == 1,"LOW","HIGH")
+  tmp <- tmp_plot[,paste(gene,"strat",sep = "_")]
+  n_high <- length(which(tmp %in% "HIGH"))
+  n_low <- length(which(tmp%in% "LOW"))
   
-  km_plot$tmp <- km_plot[,paste(gene,"strat",sep = "_")]
+  surv.obj <- Surv(tmp_plot$time, tmp_plot$status)
   
-  s1 <- survfit(surv.obj ~ tmp, data = km_plot)
+  tmp_plot$tmp <- tmp_plot[,paste(gene,"strat",sep = "_")]
+  
+  s1 <- survfit(surv.obj ~ tmp, data = tmp_plot)
 
 suppressWarnings(
   p1 <- ggsurvplot(s1,
-                   data = km_plot,
+                   data = tmp_plot,
                    pval = T,
                    conf.int = T,
 				   palette = c("red","blue"),
 				   surv.median.line = "hv",
 				   axes.offset = F,
-				   legend.labs = c(paste(gene,"High"), paste(gene, "Low")),
+				   legend.labs = c(paste(gene,"High - n =",n_high), paste(gene, "Low - n =",n_low)),
 				   xlim = c(0,max(km_plot$time)*1.05),
 				   title = paste(cancer,gene,"Survival Plot")[1]
 					)
 	)
 
+p1
 
 ggsave(file = paste0("../results/",cancer,"_km_",drug,"_",gene,".png")[1], p1, height = 6, width = 12)
 }
+
 
 
 
