@@ -1,0 +1,62 @@
+setwd("/data/home/qp241207/TCGA_query/raw_data/")
+
+libraries <- c("survival","TCGAbiolinks","SummarizedExperiment","dplyr","ggplot2",
+              "ggpubr","ggfortify","rstatix","DESeq2","survminer","cowplot")
+			  
+tmp <- read.delim("cancer.txt", header = F)
+cancer <- tmp[,1]
+
+tmp <- read.delim("genes.txt", header = F)
+goi <- tmp[,1]
+goi <- toupper(goi)
+
+tmp <- read.delim("mutant.txt, header = F)
+mut_gene <- tmp[,1]
+mut_gene <- toupper(mut_gene)
+
+for (lib in libraries) {
+  if (require(package = lib, character.only = TRUE)) {
+    successful <- "Successful"
+  } else {
+    installing <- "Installing"
+    if (!requireNamespace("BiocManager", quietly = TRUE))
+      install.packages("BiocManager")
+    BiocManager::install(pkgs = lib, suppressUpdates = T)
+    library(lib, character.only = TRUE )
+  }
+}
+
+cbind.fill <- function(...){
+    nm <- list(...) 
+    nm <- lapply(nm, as.matrix)
+    n <- max(sapply(nm, nrow)) 
+    do.call(cbind, lapply(nm, function (x) 
+        rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+
+proj <- paste0("TCGA-", cancer)
+
+mut_query <- GDCquery(
+  project =proj, 
+  data.category = "Simple Nucleotide Variation", 
+  access = "open",
+  data.type = "Masked Somatic Mutation"
+)
+
+query_2 <- mut_query
+tmp <- query_2$results[[1]]
+tmp <- tmp[which(!duplicated(tmp$cases)),]
+query_2$results[[1]] <- tmp
+mut_query <- query_2
+
+GDCdownload(mut_query, files.per.chunk = 75)
+prep <- GDCprepare(mut_query)
+mut_data <- prep[,c("Hugo_Symbol","Chromosome","Start_Position","Variant_Classification","Variant_Type","Tumor_Sample_Barcode")]
+mut_data$Tumor_Sample_Barcode <- substr(mut_data$Tumor_Sample_Barcode,1,12)
+mut_data <- as.data.frame(mut_data)
+saveRDS(mut_data, paste0(cancer,"_mut.rds"))
+gc()
+
+
+
